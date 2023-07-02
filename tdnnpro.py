@@ -1,5 +1,7 @@
 import random
 import numpy as np
+import torch
+
 from deep_speaker.audio import read_mfcc
 from deep_speaker.batcher import sample_from_mfcc
 from deep_speaker.constants import SAMPLE_RATE, NUM_FRAMES
@@ -33,8 +35,8 @@ base_model.m.load_weights("ResCNN_triplet_training_checkpoint_265.h5", by_name=T
 tdnn_input_shape = (512,)  # The input shape for the TDNN model should be based on the output of the base model.
 tdnn_output_dim = 128  # You can adjust this value based on your needs.
 
-# Load the saved pre-trained model:pretrained_average_9_25.pt
-tdnn_model = tf.keras.models.load_model('pretrained_average_9_25.pt')
+# Load the saved pre-trained model
+tdnn_model = torch.load('pretrained_average_9_25.pt', map_location=torch.device('cpu'))
 
 # Sample some inputs for WAV/FLAC files for the same speaker.
 filename_1 = 'samples/PhilippeRemy/PhilippeRemy_001.wav'
