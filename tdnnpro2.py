@@ -1,13 +1,12 @@
 import random
 import numpy as np
-import torch
-
 from deep_speaker.audio import read_mfcc
 from deep_speaker.batcher import sample_from_mfcc
 from deep_speaker.constants import SAMPLE_RATE, NUM_FRAMES
 from deep_speaker.conv_models import DeepSpeakerModel
 from deep_speaker.test import batch_cosine_similarity
-import tensorflow as tf
+from keras.models import Sequential
+from keras.layers import Conv1D, MaxPooling1D, GlobalAveragePooling1D, Dense, Dropout, BatchNormalization
 
 
 def predict_speaker_similarity(filename_1, filename_2, base_model, tdnn_model):
@@ -31,13 +30,19 @@ def predict_speaker_similarity(filename_1, filename_2, base_model, tdnn_model):
 base_model = DeepSpeakerModel()
 base_model.m.load_weights("ResCNN_triplet_training_checkpoint_265.h5", by_name=True)
 
-# Define the TDNN model and load weights from HDF5 file.
-tdnn_input_shape = (512,)  # The input shape for the TDNN model should be based on the output of the base model.
+# Define the TDNN model.
+tdnn_input_shape = (512, 1)  # The input shape for the TDNN model should be based on the output of the base model.
 tdnn_output_dim = 128  # You can adjust this value based on your needs.
-
-# Load the saved pre-trained model and extract the model itself.
-# tdnn_model = torch.load('pretrained_average_9_25.pt', map_location=torch.device('cpu'))
-tdnn_model = tf.keras.models.load_model('classifier.ckpt')
+tdnn_model = Sequential([
+    Conv1D(filters=32, kernel_size=5, activation='relu', input_shape=tdnn_input_shape),
+    MaxPooling1D(pool_size=2),
+    Conv1D(filters=64, kernel_size=5, activation='relu'),
+    MaxPooling1D(pool_size=2),
+    Conv1D(filters=128, kernel_size=3, activation='relu'),
+    GlobalAveragePooling1D(),
+    Dense(units=tdnn_output_dim)
+])
+tdnn_model.compile(loss='mse', optimizer='adam')
 
 # Sample some inputs for WAV/FLAC files for the same speaker.
 filename_1 = 'samples/PhilippeRemy/PhilippeRemy_001.wav'
@@ -45,8 +50,8 @@ filename_2 = 'samples/PhilippeRemy/PhilippeRemy_002.wav'
 filename_3 = 'samples/1255-90413-0001.flac'
 same_speaker_similarity = predict_speaker_similarity(filename_1, filename_2, base_model, tdnn_model)
 diff_speaker_similarity = predict_speaker_similarity(filename_1, filename_3, base_model, tdnn_model)
-print('Same speaker similarity:', same_speaker_similarity)  # Same speaker similarity: [0.81564593]
-print('Different speaker similarity:', diff_speaker_similarity)  # Different speaker similarity: [0.1419204]
+print('Same speaker similarity:', same_speaker_similarity)
+print('Different speaker similarity:', diff_speaker_similarity)
 
 # Assert that same speaker similarity is higher than different speaker similarity.
 assert same_speaker_similarity > diff_speaker_similarity

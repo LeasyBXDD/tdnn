@@ -14,8 +14,6 @@ Deep Speaker的非官方Tensorflow/Keras实现 | [论文](https://arxiv.org/pdf/
 
 (*) all包括：dev-clean、dev-other、test-clean、test-other、train-clean-100、train-clean-360、train-other-500。
 
-Softmax+Triplet检查点也可在[中国云 - WeiYun](https://share.weiyun.com/V2suEUVh)中找到。
-
 ### 概述
 
 Deep Speaker是一种神经说话人嵌入系统，将话语映射到一个超球面上，说话人相似度由余弦相似度衡量。由Deep Speaker生成的嵌入可以用于许多任务，包括说话人识别、验证和聚类。
