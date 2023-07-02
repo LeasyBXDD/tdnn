@@ -35,8 +35,9 @@ base_model.m.load_weights("ResCNN_triplet_training_checkpoint_265.h5", by_name=T
 tdnn_input_shape = (512,)  # The input shape for the TDNN model should be based on the output of the base model.
 tdnn_output_dim = 128  # You can adjust this value based on your needs.
 
-# Load the saved pre-trained model
+# Load the saved pre-trained model and extract the model itself.
 tdnn_model = torch.load('pretrained_average_9_25.pt', map_location=torch.device('cpu'))
+# tdnn_model = tf.keras.models.load_model('classifier.ckpt')
 
 # Sample some inputs for WAV/FLAC files for the same speaker.
 filename_1 = 'samples/PhilippeRemy/PhilippeRemy_001.wav'

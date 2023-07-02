@@ -55,8 +55,3 @@ print('Different speaker similarity:', diff_speaker_similarity)  # Different spe
 
 # Assert that same speaker similarity is higher than different speaker similarity.
 assert same_speaker_similarity > diff_speaker_similarity
-
-# 1.将TDNN模型中的卷积层改为全连接层，并添加了BatchNormalization和Dropout层，以提高模型的泛化能力和防止过拟合。
-# 2.将TDNN模型的输入形状改为(512,)，与基本模型输出的形状相对应。
-# 3.在预测函数中，删除了在TDNN模型输入上添加的维度，并在全连接层之间删除了多余的激活函数。
-# 4.在定义TDNN模型时，使用了更复杂的全连接层结构，并使用了BatchNormalization和Dropout层来进一步优化模型。
