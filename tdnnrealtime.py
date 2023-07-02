@@ -1,12 +1,14 @@
-import random
 import numpy as np
 from deep_speaker.audio import read_mfcc
 from deep_speaker.batcher import sample_from_mfcc
 from deep_speaker.constants import SAMPLE_RATE, NUM_FRAMES
 from deep_speaker.conv_models import DeepSpeakerModel
 from deep_speaker.test import batch_cosine_similarity
+import sounddevice as sd
+import soundfile as sf
 from keras.models import Sequential
 from keras.layers import Conv1D, MaxPooling1D, GlobalAveragePooling1D, Dense
+
 
 def predict_speaker_similarity(filename_1, filename_2, base_model, tdnn_model):
     # Convert audio files to MFCC features.
@@ -23,6 +25,7 @@ def predict_speaker_similarity(filename_1, filename_2, base_model, tdnn_model):
 
     # Compute the cosine similarity and return the result.
     return batch_cosine_similarity(tdnn_predict_1, tdnn_predict_2)
+
 
 # Define the base model.
 base_model = DeepSpeakerModel()
@@ -43,13 +46,22 @@ tdnn_model = Sequential([
 tdnn_model.compile(loss='mse', optimizer='adam')
 
 # Sample some inputs for WAV/FLAC files for the same speaker.
+np.random.seed(123)
 filename_1 = 'samples/PhilippeRemy/PhilippeRemy_001.wav'
-filename_2 = 'samples/PhilippeRemy/PhilippeRemy_002.wav'
-filename_3 = 'samples/1255-90413-0001.flac'
-same_speaker_similarity = predict_speaker_similarity(filename_1, filename_2, base_model, tdnn_model)
-diff_speaker_similarity = predict_speaker_similarity(filename_1, filename_3, base_model, tdnn_model)
-print('Same speaker similarity:', same_speaker_similarity)  # Same speaker similarity: [0.81564593]
-print('Different speaker similarity:', diff_speaker_similarity)  # Different speaker similarity: [0.1419204]
 
-# Assert that same speaker similarity is higher than different speaker similarity.
-assert same_speaker_similarity > diff_speaker_similarity
+
+# 实时输入
+def record_audio(filename, duration):
+    print('Recording...')
+    data = sd.rec(int(duration * SAMPLE_RATE), samplerate=SAMPLE_RATE, channels=1, dtype='float32')
+    sd.wait()
+    sf.write(filename, data, SAMPLE_RATE)
+    print('Done')
+
+
+# Record audio and predict speaker similarity.
+filename_4 = 'recorded_audio.wav'
+duration = 5  # You can adjust this value based on your needs.
+record_audio(filename_4, duration)
+recorded_similarity = predict_speaker_similarity(filename_1, filename_4, base_model, tdnn_model)
+print('Same speaker similarity for recorded audio:', recorded_similarity)
